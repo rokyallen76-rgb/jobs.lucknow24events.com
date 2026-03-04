@@ -8,13 +8,19 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             color: white;
             font-family: 'Inter', sans-serif;
+            min-height: 100vh;
         }
         
         .glassmorphism {
@@ -22,15 +28,16 @@
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
         }
         
         .job-card {
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .job-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
         }
         
         .location-badge {
@@ -42,6 +49,101 @@
             align-items: center;
             gap: 5px;
         }
+        
+        .input-field {
+            background: rgba(255, 255, 255, 0.07);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 18px 24px;
+            color: white;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.5s ease;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .employee-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .employee-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .employee-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -52,7 +154,7 @@
                 <a href="https://lucknow24events.com" class="text-2xl font-bold text-white">
                     <i class="fas fa-arrow-left mr-2 text-purple-400"></i> Back to Main Site
                 </a>
-                <div class="text-white">
+                <div>
                     <span class="bg-green-600 px-4 py-2 rounded-full text-sm">
                         <i class="fas fa-briefcase mr-1"></i> Jobs in Lucknow
                     </span>
@@ -63,105 +165,63 @@
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-12">
-        <h1 class="text-5xl md:text-6xl font-bold text-center text-white mb-4">
+        <h1 id="heroTitle" class="text-5xl md:text-6xl font-bold text-center text-white mb-4">
             Careers at <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Lucknow24Events</span>
         </h1>
-        <p class="text-gray-400 text-center mb-8 max-w-3xl mx-auto">
+        <p id="heroSubtitle" class="text-gray-400 text-center mb-8 max-w-3xl mx-auto">
             Join Lucknow's fastest growing event management team. We're hiring passionate individuals.
         </p>
         
         <!-- Stats -->
         <div class="grid md:grid-cols-3 gap-6 mb-12">
             <div class="glassmorphism p-6 text-center">
-                <div class="text-3xl font-bold text-purple-400 mb-2">50+</div>
-                <div class="text-gray-300">Team Members</div>
-            </div>
-            <div class="glassmorphism p-6 text-center">
-                <div class="text-3xl font-bold text-green-400 mb-2">12</div>
+                <div class="text-3xl font-bold text-purple-400 mb-2" id="totalJobs">0</div>
                 <div class="text-gray-300">Open Positions</div>
             </div>
             <div class="glassmorphism p-6 text-center">
-                <div class="text-3xl font-bold text-yellow-400 mb-2">100%</div>
+                <div class="text-3xl font-bold text-green-400 mb-2" id="teamMembers">50+</div>
+                <div class="text-gray-300">Team Members</div>
+            </div>
+            <div class="glassmorphism p-6 text-center">
+                <div class="text-3xl font-bold text-yellow-400 mb-2" id="localHiring">100%</div>
                 <div class="text-gray-300">Local Hiring</div>
             </div>
         </div>
         
+        <!-- Loading Indicator for Jobs -->
+        <div id="loadingJobs" class="text-center py-12">
+            <div class="loading-spinner"></div>
+            <p class="text-gray-400 mt-4">Loading available positions...</p>
+        </div>
+        
         <!-- Job Listings -->
-        <div class="grid md:grid-cols-2 gap-8 mb-16">
-            <!-- Event Manager -->
-            <div class="glassmorphism p-8 job-card">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-2xl font-bold text-white">Event Manager</h3>
-                    <span class="location-badge">
-                        <i class="fas fa-map-marker-alt text-red-400"></i> Lucknow
-                    </span>
-                </div>
-                <p class="text-gray-300 mb-4">Lead our event team and manage premium events in Lucknow.</p>
-                <div class="space-y-2 mb-6">
-                    <p class="text-gray-400"><i class="fas fa-rupee-sign text-green-400 mr-2"></i> ₹25,000 - ₹40,000/month</p>
-                    <p class="text-gray-400"><i class="fas fa-briefcase text-blue-400 mr-2"></i> 2+ years experience</p>
-                    <p class="text-gray-400"><i class="fas fa-graduation-cap text-yellow-400 mr-2"></i> Graduate in any field</p>
-                </div>
-                <button onclick="applyForJob('Event Manager')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                    Apply Now
-                </button>
+        <div id="jobsContainer" class="grid md:grid-cols-2 gap-8 mb-16 hidden"></div>
+        
+        <!-- No Jobs Message -->
+        <div id="noJobsMessage" class="text-center py-12 glassmorphism hidden">
+            <i class="fas fa-briefcase text-5xl text-gray-600 mb-4"></i>
+            <h3 class="text-2xl font-bold text-white mb-2">No Open Positions</h3>
+            <p class="text-gray-400">We're not hiring right now. Please check back later!</p>
+        </div>
+
+        <!-- Working Employees Section - Only Names Displayed -->
+        <div id="workingEmployeesSection" class="mt-16">
+            <h2 class="section-title text-center">Our Team Members</h2>
+            
+            <!-- Loading Indicator for Employees -->
+            <div id="loadingEmployees" class="text-center py-12">
+                <div class="loading-spinner"></div>
+                <p class="text-gray-400 mt-4">Loading team members...</p>
             </div>
             
-            <!-- Wedding Coordinator -->
-            <div class="glassmorphism p-8 job-card">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-2xl font-bold text-white">Wedding Coordinator</h3>
-                    <span class="location-badge">
-                        <i class="fas fa-map-marker-alt text-red-400"></i> Lucknow
-                    </span>
-                </div>
-                <p class="text-gray-300 mb-4">Coordinate weddings at various venues across Lucknow.</p>
-                <div class="space-y-2 mb-6">
-                    <p class="text-gray-400"><i class="fas fa-rupee-sign text-green-400 mr-2"></i> ₹18,000 - ₹30,000/month</p>
-                    <p class="text-gray-400"><i class="fas fa-briefcase text-blue-400 mr-2"></i> 1+ year experience</p>
-                    <p class="text-gray-400"><i class="fas fa-heart text-red-400 mr-2"></i> Passion for weddings</p>
-                </div>
-                <button onclick="applyForJob('Wedding Coordinator')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                    Apply Now
-                </button>
-            </div>
+            <!-- Employees Grid - Only Names -->
+            <div id="employeesContainer" class="grid md:grid-cols-3 lg:grid-cols-5 gap-6 mb-16 hidden"></div>
             
-            <!-- Professional Waiters -->
-            <div class="glassmorphism p-8 job-card">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-2xl font-bold text-white">Professional Waiters</h3>
-                    <span class="location-badge">
-                        <i class="fas fa-map-marker-alt text-red-400"></i> Lucknow
-                    </span>
-                </div>
-                <p class="text-gray-300 mb-4">Serve at premium events and parties in Lucknow.</p>
-                <div class="space-y-2 mb-6">
-                    <p class="text-gray-400"><i class="fas fa-rupee-sign text-green-400 mr-2"></i> ₹12,000 - ₹18,000/month</p>
-                    <p class="text-gray-400"><i class="fas fa-clock text-blue-400 mr-2"></i> Flexible shifts</p>
-                    <p class="text-gray-400"><i class="fas fa-utensils text-yellow-400 mr-2"></i> Training provided</p>
-                </div>
-                <button onclick="applyForJob('Professional Waiter')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                    Apply Now
-                </button>
-            </div>
-            
-            <!-- Event Assistant -->
-            <div class="glassmorphism p-8 job-card">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-2xl font-bold text-white">Event Assistant</h3>
-                    <span class="location-badge">
-                        <i class="fas fa-map-marker-alt text-red-400"></i> Lucknow
-                    </span>
-                </div>
-                <p class="text-gray-300 mb-4">Support our event team in setup and execution.</p>
-                <div class="space-y-2 mb-6">
-                    <p class="text-gray-400"><i class="fas fa-rupee-sign text-green-400 mr-2"></i> ₹10,000 - ₹15,000/month</p>
-                    <p class="text-gray-400"><i class="fas fa-clock text-blue-400 mr-2"></i> Freshers welcome</p>
-                    <p class="text-gray-400"><i class="fas fa-tasks text-purple-400 mr-2"></i> No experience needed</p>
-                </div>
-                <button onclick="applyForJob('Event Assistant')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
-                    Apply Now
-                </button>
+            <!-- No Employees Message -->
+            <div id="noEmployeesMessage" class="text-center py-12 glassmorphism hidden">
+                <i class="fas fa-users text-5xl text-gray-600 mb-4"></i>
+                <h3 class="text-2xl font-bold text-white mb-2">No Team Members Yet</h3>
+                <p class="text-gray-400">Our team is growing. Check back soon!</p>
             </div>
         </div>
         
@@ -171,42 +231,43 @@
             
             <form id="jobApplicationForm" class="space-y-6">
                 <input type="hidden" id="jobPosition">
+                <input type="hidden" id="jobCategory">
                 
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-white mb-2">Full Name *</label>
-                        <input type="text" id="applicantName" class="w-full bg-white/10 border border-white/20 rounded-lg px-6 py-3 text-white" required>
+                        <input type="text" id="applicantName" class="input-field" required>
                     </div>
                     
                     <div>
                         <label class="block text-white mb-2">Phone Number *</label>
-                        <input type="tel" id="applicantPhone" class="w-full bg-white/10 border border-white/20 rounded-lg px-6 py-3 text-white" required>
+                        <input type="tel" id="applicantPhone" class="input-field" required>
                     </div>
                     
                     <div>
                         <label class="block text-white mb-2">Email</label>
-                        <input type="email" id="applicantEmail" class="w-full bg-white/10 border border-white/20 rounded-lg px-6 py-3 text-white">
+                        <input type="email" id="applicantEmail" class="input-field">
                     </div>
                     
                     <div>
                         <label class="block text-white mb-2">Location in Lucknow *</label>
-                        <input type="text" id="applicantLocation" class="w-full bg-white/10 border border-white/20 rounded-lg px-6 py-3 text-white" placeholder="e.g., Gomti Nagar" required>
+                        <input type="text" id="applicantLocation" class="input-field" placeholder="e.g., Gomti Nagar" required>
                     </div>
                     
                     <div>
                         <label class="block text-white mb-2">Experience (Years)</label>
-                        <input type="number" id="applicantExperience" class="w-full bg-white/10 border border-white/20 rounded-lg px-6 py-3 text-white">
+                        <input type="number" id="applicantExperience" class="input-field">
                     </div>
                     
                     <div>
                         <label class="block text-white mb-2">Age *</label>
-                        <input type="number" id="applicantAge" class="w-full bg-white/10 border border-white/20 rounded-lg px-6 py-3 text-white" required>
+                        <input type="number" id="applicantAge" class="input-field" required>
                     </div>
                 </div>
                 
                 <div>
                     <label class="block text-white mb-2">Why should we hire you? *</label>
-                    <textarea id="applicantMessage" rows="4" class="w-full bg-white/10 border border-white/20 rounded-lg px-6 py-3 text-white" required></textarea>
+                    <textarea id="applicantMessage" rows="4" class="input-field" required></textarea>
                 </div>
                 
                 <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-4 rounded-lg font-semibold hover:shadow-lg transition">
@@ -214,57 +275,296 @@
                 </button>
                 
                 <p class="text-center text-gray-400 text-sm">
-                    <i class="fas fa-shield-alt mr-2"></i> Your information is secure. Only shortlisted candidates will be contacted.
+                    <i class="fas fa-shield-alt mr-2"></i> Your information is secure. You'll be added to our team immediately.
                 </p>
             </form>
         </div>
     </div>
 
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://eibvlmsgprvwoetoqffa.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpYnZsbXNncHJ2d29ldG9xZmZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NjMzODMsImV4cCI6MjA4NzIzOTM4M30.YVEGGX0nNE-S_0Nksd-H8GI1ejdx-sS2ZRHiMf6xMjw';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // REPLACE WITH YOUR ACTUAL APPS SCRIPT URL
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5qS_P8GTQC3oTMDYtyCNvwy1MCtDFWbAnbRfsSmjQJXzbbPkLzW53_cqdGFiz-ccTIQ/exec';
         
-        function applyForJob(position) {
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSiteContent();
+            loadJobs();
+            loadTeamMembers();
+        });
+
+        function loadSiteContent() {
+            const formData = new FormData();
+            formData.append('action', 'getSiteContent');
+            
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.content) {
+                    updateSiteContent(data.content);
+                }
+            })
+            .catch(error => console.error('Error loading site content:', error));
+        }
+
+        function updateSiteContent(content) {
+            if (content.hero) {
+                if (content.hero.title) {
+                    document.getElementById('heroTitle').innerHTML = content.hero.title;
+                }
+                if (content.hero.subtitle) {
+                    document.getElementById('heroSubtitle').textContent = content.hero.subtitle;
+                }
+            }
+            
+            if (content.stats) {
+                if (content.stats.team_members) {
+                    document.getElementById('teamMembers').textContent = content.stats.team_members;
+                }
+                if (content.stats.local_hiring) {
+                    document.getElementById('localHiring').textContent = content.stats.local_hiring;
+                }
+            }
+        }
+
+        function loadJobs() {
+            showLoading();
+            
+            const formData = new FormData();
+            formData.append('action', 'getJobs');
+            
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.success) {
+                    displayJobs(data.jobs || []);
+                    document.getElementById('totalJobs').textContent = (data.jobs || []).length;
+                } else {
+                    showNotification('Error loading jobs: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showNotification('Error connecting to server', 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        function displayJobs(jobsList) {
+            const container = document.getElementById('jobsContainer');
+            const noJobsMsg = document.getElementById('noJobsMessage');
+            
+            if (jobsList.length === 0) {
+                container.classList.add('hidden');
+                noJobsMsg.classList.remove('hidden');
+                return;
+            }
+            
+            container.innerHTML = '';
+            noJobsMsg.classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            jobsList.forEach(job => {
+                const jobCard = createJobCard(job);
+                container.appendChild(jobCard);
+            });
+        }
+
+        function createJobCard(job) {
+            const div = document.createElement('div');
+            div.className = 'glassmorphism p-8 job-card';
+            
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-2xl font-bold text-white">${escapeHtml(job.title)}</h3>
+                    <span class="location-badge">
+                        <i class="fas fa-map-marker-alt text-red-400"></i> ${escapeHtml(job.location)}
+                    </span>
+                </div>
+                <p class="text-gray-300 mb-4">${escapeHtml(job.description)}</p>
+                <div class="space-y-2 mb-6">
+                    <p class="text-gray-400"><i class="fas fa-rupee-sign text-green-400 mr-2"></i> ${escapeHtml(job.salary)}</p>
+                    <p class="text-gray-400"><i class="fas fa-briefcase text-blue-400 mr-2"></i> ${escapeHtml(job.experience)}</p>
+                    <p class="text-gray-400"><i class="fas fa-graduation-cap text-yellow-400 mr-2"></i> ${escapeHtml(job.qualification)}</p>
+                </div>
+                <button onclick="applyForJob('${escapeHtml(job.title)}', '${escapeHtml(job.category || 'General')}')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                    Apply Now <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            `;
+            
+            return div;
+        }
+
+        function loadTeamMembers() {
+            const loadingEl = document.getElementById('loadingEmployees');
+            const container = document.getElementById('employeesContainer');
+            const noMsg = document.getElementById('noEmployeesMessage');
+            
+            loadingEl.classList.remove('hidden');
+            container.classList.add('hidden');
+            noMsg.classList.add('hidden');
+            
+            const formData = new FormData();
+            formData.append('action', 'getTeamMembers');
+            
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingEl.classList.add('hidden');
+                
+                if (data.success) {
+                    displayTeamMembers(data.employees || []);
+                } else {
+                    console.error('Error loading employees:', data.error);
+                    noMsg.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                loadingEl.classList.add('hidden');
+                console.error('Error:', error);
+                noMsg.classList.remove('hidden');
+            });
+        }
+
+        function displayTeamMembers(employees) {
+            const container = document.getElementById('employeesContainer');
+            const noMsg = document.getElementById('noEmployeesMessage');
+            
+            if (!employees || employees.length === 0) {
+                container.classList.add('hidden');
+                noMsg.classList.remove('hidden');
+                return;
+            }
+            
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+            noMsg.classList.add('hidden');
+            
+            const shuffled = [...employees].sort(() => Math.random() - 0.5);
+            const displayEmployees = shuffled.slice(0, 15);
+            
+            displayEmployees.forEach(emp => {
+                const employeeCard = createTeamMemberCard(emp);
+                container.appendChild(employeeCard);
+            });
+        }
+
+        function createTeamMemberCard(employee) {
+            const div = document.createElement('div');
+            div.className = 'employee-card';
+            
+            const initials = employee.name
+                .split(' ')
+                .map(word => word[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+            
+            const colors = ['bg-purple-600', 'bg-pink-600', 'bg-blue-600', 'bg-green-600', 'bg-yellow-600', 'bg-red-600'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            div.innerHTML = `
+                <div class="employee-avatar ${randomColor}">
+                    ${initials}
+                </div>
+                <h3 class="text-lg font-semibold text-white">${escapeHtml(employee.name)}</h3>
+                <p class="text-sm text-gray-400 mt-1">${escapeHtml(employee.designation)}</p>
+            `;
+            
+            return div;
+        }
+
+        function applyForJob(position, category) {
             document.getElementById('selectedPosition').textContent = position;
             document.getElementById('jobPosition').value = position;
+            document.getElementById('jobCategory').value = category;
             document.getElementById('applicationForm').classList.remove('hidden');
             document.getElementById('applicationForm').scrollIntoView({ behavior: 'smooth' });
         }
-        
-        document.getElementById('jobApplicationForm').addEventListener('submit', async function(e) {
+
+        function showLoading() {
+            document.getElementById('loadingJobs').classList.remove('hidden');
+            document.getElementById('jobsContainer').classList.add('hidden');
+            document.getElementById('noJobsMessage').classList.add('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingJobs').classList.add('hidden');
+        }
+
+        document.getElementById('jobApplicationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const applicationData = {
-                position: document.getElementById('jobPosition').value,
-                name: document.getElementById('applicantName').value,
-                phone: document.getElementById('applicantPhone').value,
-                email: document.getElementById('applicantEmail').value,
-                location: document.getElementById('applicantLocation').value,
-                experience: document.getElementById('applicantExperience').value,
-                age: document.getElementById('applicantAge').value,
-                message: document.getElementById('applicantMessage').value,
-                applied_date: new Date().toISOString(),
-                status: 'New'
-            };
+            const formData = new FormData();
+            formData.append('action', 'submitApplication');
+            formData.append('position', document.getElementById('jobPosition').value);
+            formData.append('category', document.getElementById('jobCategory').value);
+            formData.append('name', document.getElementById('applicantName').value);
+            formData.append('phone', document.getElementById('applicantPhone').value);
+            formData.append('email', document.getElementById('applicantEmail').value);
+            formData.append('location', document.getElementById('applicantLocation').value);
+            formData.append('experience', document.getElementById('applicantExperience').value);
+            formData.append('age', document.getElementById('applicantAge').value);
+            formData.append('message', document.getElementById('applicantMessage').value);
             
-            try {
-                const { data, error } = await supabase
-                    .from('job_applications')
-                    .insert(applicationData);
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+            submitBtn.disabled = true;
+            
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
                 
-                if (error) throw error;
-                
-                alert('Application submitted successfully! We will contact you soon.');
-                this.reset();
-                document.getElementById('applicationForm').classList.add('hidden');
-                
-            } catch (error) {
+                if (data.success) {
+                    showNotification('Congratulations! You have been added to our team. Welcome to Lucknow24Events!', 'success');
+                    this.reset();
+                    document.getElementById('applicationForm').classList.add('hidden');
+                    loadTeamMembers();
+                } else {
+                    showNotification('Error: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                showNotification('Error submitting application. Please try again.', 'error');
                 console.error('Error:', error);
-                alert('Error submitting application. Please try again.');
-            }
+            });
         });
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type + ' show';
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html>
